@@ -1,4 +1,11 @@
-# Configurando cluster kubernetes v1.29.1 Ubuntu v22.04
+# Configurando cluster kubernetes v1.29.1 Ubuntu Server v24.04
+
+### Configurações mínimas das VMs
+2 VMs
+- Uma será o control plane e as outras serão worker nodes
+1. 8GB de Ram
+1. 2 Núcleos
+1. 48GB de HD
 
 ```
 sudo su
@@ -85,19 +92,21 @@ apt-get install -y kubelet=1.29.1-1.1 kubeadm=1.29.1-1.1 kubectl=1.29.1-1.1
 apt-mark hold kubelet kubeadm kubectl
 ```
 
-# check swap config, ensure swap is 0
+# Verificar se o swap config está em 0
+
 ```
 free -m
 ```
 
-### ONLY ON CONTROL NODE .. control plane install:
+# Configurar node control plane
+Somente no node que será o control plane do cluster executar os comandos:
 ```
-kubeadm init --pod-network-cidr 10.10.0.0/16 --kubernetes-version 1.29.1 --node-name k8s-control
+kubeadm init --pod-network-cidr 10.10.0.0/16 --kubernetes-version 1.29.1 --node-name k8s-apps-master-01
 ```
 ```
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
-# add Calico 3.27.2 CNI 
+# Adicionar Calico 3.27.2 CNI 
 ```
 kubectl create -f tigera-operator.yaml
 ```
@@ -105,12 +114,9 @@ kubectl create -f tigera-operator.yaml
 vi custom-resources.yaml <<<<<< edit the CIDR for pods if its custom
 kubectl apply -f custom-resources.yaml
 ```
-# get worker node commands to run to join additional nodes into cluster
+# Adicionar NODE no cluster
+Executar no control plane para gerar o token para adicionar novos NODES
 ```
 kubeadm token create --print-join-command
 ```
-###
-
-
-### ONLY ON WORKER nodes
-Run the command from the token create output above
+Executar o token nos NODES que serão adicionados no cluster
